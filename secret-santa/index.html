@@ -361,7 +361,7 @@
       <p class="hint">&#x1F4EC; A top-secret dispatch has arrived from the North Pole.</p>
       <form id="revealForm" autocomplete="off">
         <label for="elfName">What's your elf name?</label>
-        <input type="text" id="elfName" placeholder="e.g. Twinkly Pip Gumdropwhistle" autocomplete="off" autocapitalize="words" autocorrect="off" spellcheck="false" required>
+        <input type="text" id="elfName" placeholder="e.g. Wobbly Pickles" autocomplete="off" autocapitalize="words" autocorrect="off" spellcheck="false" required>
         <button id="revealBtn" class="block big" type="submit">&#x1F50D; Reveal my giftee</button>
       </form>
       <p id="revealStatus" class="status" aria-live="polite"></p>
@@ -408,36 +408,29 @@
 'use strict';
 
 /* ================= word lists ================= */
-const ADJECTIVES = ['Jingly','Twinkly','Sparkly','Wobbly','Snuggly','Giggly','Frosty','Sugary','Tinselly','Glittery',
-  'Fuzzy','Bouncy','Merry','Jolly','Pepperminty','Gingery','Snowy','Toasty','Cocoa','Sneaky',
-  'Sleepy','Dizzy','Wiggly','Squishy','Crinkly','Chunky','Fluffy','Bumbly','Prancy','Twirly',
-  'Zippy','Marzipan','Nutmeg','Cinnamon','Velvety','Tinkly','Clumsy','Noodly','Pickled','Turbo',
-  'Mighty','Tiny','Wee','Sticky','Jiggly','Shimmery','Plucky','Cheeky','Rosy','Starry',
-  'Icy','Mittened','Booted','Rumbly','Snorty','Waddly','Puffy','Sprightly','Bonkers','Kooky',
-  'Zany','Loopy','Goofy','Wonky','Spangly','Festive','Yuletide','Candied','Buttery','Toffee',
-  'Crumbly','Sniffly','Hiccupy','Ticklish','Bashful','Grumbly','Snoozy','Peppy','Perky','Quirky',
-  'Snazzy','Dapper','Fancy','Sassy','Spiffy','Dazzling','Blinky','Squeaky','Honky','Tootly',
-  'Jazzy','Swirly','Glowy','Frizzy','Doodly','Fizzy','Bubbly','Wibbly','Chilly','Cuddly'];
-const FIRST_NAMES = ['Pip','Tinsel','Jingle','Sprout','Nibbles','Buttons','Pudding','Biscuit','Noodle','Twinkle',
-  'Pickles','Bramble','Fizz','Widget','Gizmo','Sprocket','Doodle','Muffin','Crumpet','Waffle',
-  'Pebble','Clementine','Figgy','Holly','Ivy','Juniper','Pippin','Bartholomew','Ebenezer','Mistletoe',
-  'Cobble','Tumble','Bumble','Wobble','Dinky','Pumpernickel','Sprinkles','Jellybean','Gumdrop','Marshmallow',
-  'Fudge','Truffle','Clove','Bingle','Bobbin','Thimble','Tinker','Ziggy','Mittens','Snowball',
-  'Flurry','Frostina','Dasher','Prancer','Comet','Twiggy','Hazel','Acorn','Chestnut','Puddle',
-  'Spud','Tater','Turnip','Radish','Parsnip','Rutabaga','Barnaby','Rupert','Percival','Mortimer',
-  'Gertrude','Mildred','Agatha','Winifred','Ignatius','Cornelius','Archibald','Humphrey','Reginald','Fitzgerald',
-  'Bertha','Ethel','Florence','Dorothy','Montgomery','Sven','Brunhilde','Gustav','Ingrid','Lars',
-  'Magnus','Nils','Rolf','Sigrid','Ulf','Bjorn','Dagmar','Elmo','Tiberius','Wilbur'];
-const SURNAMES = ['Gumdropwhistle','Sparklebottom','Jinglebritches','Tinselpants','McFrostyface','Puddingfoot','Candycane','Wobblebottom','Fuzzlewhisker','Twinkletoes',
-  'Frostbeard','Cocoamug','Snickerdoodle','Gingersnap','Plumpudding','Merrymitten','Hollyberry','Mistlewhistle','Sugarplum','Nutcracker',
-  'Sleighbells','Stockingstuffer','Chimneysweep','Fruitcake','Eggnogg','Figgypudding','Marshmallowfluff','Toffeenose','Waddlesworth','Bumblesnout',
-  'Noodleman','Pickleberry','Crumblecake','Snowglobe','Icicletoes','Glittergut','Tinklebell','Jollybottom','Elfington','Gnomesworth',
-  'Wrappington','Bowtangle','Ribbonwrangler','Toymaker','Sawdust','Sprocketsocks','Whistlewind','Mittensworth','Cuddlesnout','Puddlejumper',
-  'Biscuitbarrel','Cookiecrumb','Milkmustache','Reindeerwrangler','Sleighgreaser','Northpole','Penguinpants','Walruswhisker','Yakbutter','Frostbite',
-  'Blizzardbottom','Flurryfoot','Snowangel','Slushpuddle','Toboggan','Lumpofcoal','Naughtylist','Nicelist','Chestnutroast','Hottoddy',
-  'Wassail','Fireside','Yulelog','Glitterbomb','Garland','Baubleworth','Candlewick','Gingerbeard','Pinecone','Spruceworth',
-  'Jamjar','Teacosy','Scarfknotter','Earmuffs','Bobblehat','Woollysocks','Slippersworth','Snorelington','Napsworth','Fluffernutter',
-  'Sugarsnout','Jelloshoes','Tinseltooth','Snickerbottom','Hullabaloo','Kerfuffle','Whatsit','Thingamabob','Doohickey','Fiddlesticks'];
+const ADJECTIVES = ['Soggy','Wobbly','Jolly','Fuzzy','Giggly','Sneaky','Sleepy','Dizzy','Wiggly','Squishy',
+  'Chunky','Fluffy','Bouncy','Zippy','Tiny','Wee','Sticky','Jiggly','Cheeky','Rosy',
+  'Icy','Puffy','Kooky','Zany','Loopy','Goofy','Wonky','Jazzy','Fizzy','Bubbly',
+  'Chilly','Cuddly','Snazzy','Spiffy','Peppy','Perky','Quirky','Sassy','Fancy','Dapper',
+  'Grumpy','Lumpy','Bumpy','Frosty','Toasty','Snowy','Merry','Sparkly','Twinkly','Jingly',
+  'Crispy','Crunchy','Minty','Sugary','Gooey','Mushy','Batty','Daffy','Dotty','Wacky',
+  'Silly','Funky','Groovy','Lucky','Plucky','Rowdy','Clumsy','Snoozy','Sniffly','Hoppy',
+  'Speedy','Turbo','Mighty','Bossy','Shiny','Glitzy','Frizzy','Scruffy','Jumpy','Squeaky',
+  'Spunky','Zesty','Peachy','Cheesy','Corny','Feisty','Snappy','Chirpy','Breezy','Slushy',
+  'Crumbly','Flaky','Rusty','Fussy','Huffy','Jumbo','Mega','Sir','Lady','Captain',
+  'Baron','Duke','Doctor','Agent','Count','Mister','Madam','Little','Big','Lord'];
+const NOUNS = ['Pickles','Noodle','Muffin','Pudding','Biscuit','Waffle','Crumpet','Nugget','Gumdrop','Sprout',
+  'Turnip','Parsnip','Spud','Tater','Pretzel','Bagel','Pancake','Cupcake','Cookie','Donut',
+  'Toffee','Fudge','Truffle','Sprinkle','Jelly','Custard','Trifle','Strudel','Nougat','Pepper',
+  'Radish','Pumpkin','Walnut','Peanut','Cashew','Acorn','Mitten','Slipper','Earmuff','Bobble',
+  'Tinsel','Bauble','Jingle','Twinkle','Gizmo','Widget','Sprocket','Doodad','Gadget','Noggin',
+  'Pebble','Puddle','Bubble','Wobble','Doodle','Kazoo','Banjo','Tuba','Bongo','Yodel',
+  'Penguin','Walrus','Moose','Llama','Yak','Goose','Narwhal','Badger','Ferret','Hamster',
+  'Wombat','Otter','Puffin','Gerbil','Weasel','Pigeon','Turkey','Snowman','Yeti','Gnome',
+  'Goblin','Pixie','Teapot','Kettle','Spatula','Spoon','Ladle','Whisk','Teacup','Toaster',
+  'Burrito','Taco','Nacho','Nibbles','Buttons','Bonbon','Sherbet','Churro','Scone','Crouton',
+  'Cabbage','Shrimp','Squid','Lobster','Kipper','Rumpus','Ruckus','Hubbub','Wiggles','Giggles',
+  'Chuckles','Sniffles','Hiccup','Fiddle'];
 
 const PBKDF2_ITERATIONS = 200000;
 const MAX_ITERATIONS = 2000000;
@@ -555,7 +548,7 @@ async function specialElfName(participant) {
   return dec.decode(fromHex(hit.name).map((b, i) => b ^ mask[i]));
 }
 function randomElfName() {
-  return [ADJECTIVES, FIRST_NAMES, SURNAMES].map(list => list[randInt(list.length)]).join(' ');
+  return [ADJECTIVES, NOUNS].map(list => list[randInt(list.length)]).join(' ');
 }
 async function makeElfNames(participants) {
   const names = new Array(participants.length);
