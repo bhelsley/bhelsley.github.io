@@ -362,7 +362,7 @@
       <form id="revealForm" autocomplete="off">
         <label for="elfName">What's your elf name?</label>
         <input type="text" id="elfName" placeholder="e.g. Twinkly Pip Gumdropwhistle" autocomplete="off" autocapitalize="words" autocorrect="off" spellcheck="false" required>
-        <button id="revealBtn" class="block big" type="submit">&#x1F50D; Reveal my victim&hellip; er, giftee</button>
+        <button id="revealBtn" class="block big" type="submit">&#x1F50D; Reveal my giftee</button>
       </form>
       <p id="revealStatus" class="status" aria-live="polite"></p>
     </section>
@@ -544,7 +544,7 @@ function assign(n, exclusions) {
 /* ================= elf names ================= */
 // Some elves are born with their names. (Stored hashed so nobody can spot it by reading the source.)
 const SPECIAL_ELVES = [
-  { hash: '98dc167f1d6578cd4ad7d657f7a6549e6a17117ccbd8ce26dc4eb52a63f53e55', name: '678f979e7a7acf326aa5' },
+  { hash: 'f40b9286c94e1d97c20a7bd3c1a74d5e187d5db2df39459ca8c9d1f9266e8f18', name: '30b09c498155c05b2fdf' },
 ];
 async function specialElfName(participant) {
   const norm = normalizeName(participant);
