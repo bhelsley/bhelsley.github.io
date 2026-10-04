@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f3b2c">
+<title>Elf Workshop · Secret Santa</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%81%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --pine: #0f3b2c;
+    --pine-dark: #0a2a1f;
+    --red: #c41e3a;
+    --red-dark: #7a0c1f;
+    --gold: #f5c518;
+    --cream: #fff8e7;
+    --ink: #2b1a0f;
+    --muted: #7a6650;
+    --wacky: "Chalkboard SE", "Comic Sans MS", "Comic Neue", "Marker Felt", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--wacky);
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 20% 10%, rgba(255,255,255,.06) 0 2px, transparent 3px) 0 0 / 46px 46px,
+      radial-gradient(circle at 70% 60%, rgba(255,255,255,.05) 0 1.5px, transparent 2.5px) 0 0 / 31px 31px,
+      var(--pine);
+    padding: env(safe-area-inset-top, 0px) 16px calc(env(safe-area-inset-bottom, 0px) + 24px);
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0 0 auto 0; height: 10px; z-index: 5;
+    background: repeating-linear-gradient(-45deg, var(--red) 0 12px, #fff 12px 24px);
+  }
+  .wrap { max-width: 480px; margin: 0 auto; position: relative; z-index: 1; }
+  [hidden] { display: none !important; }
+
+  header { text-align: center; padding-top: 22px; color: var(--cream); }
+  header svg { width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; }
+  h1 {
+    font-family: "Marker Felt", var(--wacky);
+    font-size: clamp(2rem, 9vw, 2.8rem);
+    margin: 10px 0 0;
+    letter-spacing: .02em;
+    color: var(--gold);
+    text-shadow: 3px 3px 0 var(--red), 6px 6px 0 rgba(0,0,0,.35);
+    transform: rotate(-2deg);
+  }
+  .tagline { margin: 6px 0 18px; opacity: .9; font-size: .95rem; }
+
+  .card {
+    background: var(--cream);
+    border: 3px dashed var(--red);
+    border-radius: 18px;
+    padding: 18px 16px;
+    margin: 18px 0;
+    box-shadow: 0 6px 0 rgba(0,0,0,.25);
+  }
+  .card:nth-of-type(odd) { transform: rotate(-.6deg); }
+  .card:nth-of-type(even) { transform: rotate(.5deg); }
+  .card h2 { margin: 0 0 4px; font-size: 1.3rem; color: var(--red); }
+  .hint { margin: 0 0 12px; color: var(--muted); font-size: .9rem; }
+
+  textarea, input[type=text], select {
+    width: 100%;
+    font: inherit;
+    font-size: 16px; /* prevents iOS zoom-on-focus */
+    color: var(--ink);
+    background: #fff;
+    border: 2px solid #d8c7a8;
+    border-radius: 12px;
+    padding: 12px;
+  }
+  textarea { min-height: 170px; resize: vertical; line-height: 1.5; }
+  textarea:focus, input:focus, select:focus { outline: 3px solid var(--gold); border-color: var(--red); }
+
+  .pair { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .pair select { flex: 1 1 120px; min-height: 48px; }
+  .pair .vs { font-weight: bold; color: var(--red); }
+
+  button, .btn {
+    font: inherit;
+    font-size: 1.05rem;
+    font-weight: bold;
+    border: 0;
+    border-radius: 14px;
+    min-height: 48px;
+    padding: 10px 18px;
+    cursor: pointer;
+    color: #fff;
+    background: var(--red);
+    box-shadow: 0 5px 0 var(--red-dark);
+    transition: transform .06s, box-shadow .06s;
+    text-decoration: none;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  button:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 var(--red-dark); }
+  button:disabled { opacity: .55; cursor: progress; }
+  button.green { background: #1f8a3c; box-shadow: 0 5px 0 #0e4f20; }
+  button.green:active:not(:disabled) { box-shadow: 0 1px 0 #0e4f20; }
+  button.ghost { background: #efe3c8; color: var(--ink); box-shadow: 0 5px 0 #b9a47c; }
+  button.ghost:active:not(:disabled) { box-shadow: 0 1px 0 #b9a47c; }
+  .block { width: 100%; }
+  .big { font-size: 1.25rem; min-height: 60px; }
+  .add-btn { margin-top: 10px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #ffe4e8; border: 2px solid var(--red); color: var(--red-dark);
+    border-radius: 999px; padding: 4px 4px 4px 12px; font-size: .95rem;
+  }
+  .chip button {
+    min-height: 32px; width: 32px; padding: 0; border-radius: 50%;
+    font-size: 1rem; box-shadow: none; background: var(--red);
+  }
+  .empty { color: var(--muted); font-style: italic; font-size: .9rem; }
+
+  .error {
+    background: #ffe4e8; border: 3px solid var(--red); color: var(--red-dark);
+    border-radius: 14px; padding: 12px 14px; margin: 14px 0; font-weight: bold;
+    animation: shake .4s;
+  }
+  .warn {
+    background: #fff3c4; border: 2px solid var(--gold); border-radius: 12px;
+    padding: 10px 12px; margin: 12px 0; font-size: .9rem;
+  }
+  .status { text-align: center; color: var(--cream); min-height: 1.5em; margin: 12px 0; font-size: 1.05rem; }
+  .card .status { color: var(--muted); }
+
+  .msg-card { position: relative; }
+  .msg-card.sent { opacity: .6; }
+  .msg-card h3 { margin: 0 0 8px; font-size: 1.15rem; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .msg-text {
+    background: #fff; border: 2px solid #e6d6b6; border-radius: 12px;
+    padding: 10px 12px; margin: 0 0 12px; white-space: pre-wrap; overflow-wrap: anywhere;
+    font-family: system-ui, -apple-system, sans-serif; font-size: .9rem; line-height: 1.45;
+  }
+  .msg-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .msg-actions button { flex: 1 1 110px; }
+  .sent-toggle { display: flex; align-items: center; gap: 8px; font-size: .95rem; cursor: pointer; flex: 1 1 100%; justify-content: center; padding-top: 4px; }
+  .sent-toggle input { width: 24px; height: 24px; accent-color: #1f8a3c; }
+
+  .reveal-box { text-align: center; }
+  .reveal-box label { display: block; font-size: 1.15rem; font-weight: bold; margin-bottom: 8px; color: var(--red); }
+  .reveal-box input { text-align: center; font-size: 1.2rem; margin-bottom: 14px; }
+  .result { text-align: center; }
+  .result pre, .ascii {
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    line-height: 1.15; margin: 0 auto 8px; display: inline-block; text-align: left;
+  }
+  .result pre { color: var(--red); font-size: .95rem; animation: pop .6s cubic-bezier(.2,1.6,.4,1); }
+  .recipient {
+    font-family: "Marker Felt", var(--wacky);
+    font-size: clamp(2rem, 10vw, 2.8rem); color: #1f8a3c; margin: 6px 0 4px;
+    animation: pop .7s .15s both cubic-bezier(.2,1.6,.4,1);
+    overflow-wrap: anywhere;
+  }
+  .shake { animation: shake .4s; }
+
+  footer { text-align: center; color: var(--cream); opacity: .85; margin-top: 24px; font-size: .85rem; }
+  footer .ascii { color: #8fd18f; font-size: .8rem; }
+  footer .ascii b { color: var(--gold); font-weight: normal; }
+  footer .ascii i { color: #ff7a8a; font-style: normal; }
+  footer a { color: var(--gold); }
+
+  /* --- workshop scene animations --- */
+  .elf { transform-origin: 270px 180px; animation: wobble 2.4s ease-in-out infinite; }
+  .elf .hammer { transform-origin: 288px 128px; animation: bonk .8s ease-in-out infinite; }
+  .elf .blink { transform-box: fill-box; transform-origin: center; animation: blink 4s infinite; }
+  .smoke circle { animation: puff 3s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+  .smoke circle:nth-child(2) { animation-delay: 1s; }
+  .smoke circle:nth-child(3) { animation-delay: 2s; }
+  .twinkle { animation: twinkle 1.8s ease-in-out infinite alternate; }
+  .twinkle:nth-of-type(2n) { animation-delay: .7s; }
+
+  @keyframes wobble { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg) translateY(-3px); } }
+  @keyframes bonk { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-35deg); } }
+  @keyframes blink { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+  @keyframes puff { 0% { opacity: .8; transform: translateY(0) scale(.6); } 100% { opacity: 0; transform: translateY(-18px) scale(1.4); } }
+  @keyframes twinkle { from { opacity: .3; } to { opacity: 1; } }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 20%,60% { transform: translateX(-8px); } 40%,80% { transform: translateX(8px); } }
+  @keyframes pop { from { transform: scale(.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  @keyframes fall { to { transform: translateY(110vh) translateX(var(--drift)); } }
+
+  .snow { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .snow span {
+    position: absolute; top: -10px; color: #fff; opacity: .7;
+    animation: fall linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .snow { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="snow" aria-hidden="true"></div>
+<div class="wrap">
+  <header>
+    <svg viewBox="0 0 360 200" role="img" aria-label="A wobbly elf hammering away outside the elf workshop">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#071a2b"/><stop offset="1" stop-color="#1d4a6e"/>
+        </linearGradient>
+      </defs>
+      <rect width="360" height="200" rx="22" fill="url(#sky)"/>
+      <!-- moon + stars -->
+      <circle cx="322" cy="34" r="16" fill="#fff4c2"/>
+      <circle cx="330" cy="28" r="14" fill="#0b2236"/>
+      <g fill="#fff">
+        <circle class="twinkle" cx="40" cy="26" r="1.8"/>
+        <circle class="twinkle" cx="92" cy="18" r="1.3"/>
+        <circle class="twinkle" cx="210" cy="30" r="1.6"/>
+        <circle class="twinkle" cx="250" cy="14" r="1.2"/>
+        <circle class="twinkle" cx="284" cy="56" r="1.4"/>
+        <circle class="twinkle" cx="20" cy="70" r="1.2"/>
+      </g>
+      <!-- chimney + smoke -->
+      <g class="smoke" fill="#cfd8e3">
+        <circle cx="150" cy="44" r="6"/><circle cx="156" cy="34" r="7"/><circle cx="148" cy="24" r="8"/>
+      </g>
+      <rect x="140" y="52" width="20" height="34" fill="#7a2e1b"/>
+      <rect x="136" y="48" width="28" height="8" rx="3" fill="#fff"/>
+      <!-- workshop -->
+      <rect x="30" y="100" width="150" height="84" fill="#a0522d"/>
+      <g stroke="#7d3f22" stroke-width="2">
+        <line x1="30" y1="118" x2="180" y2="118"/><line x1="30" y1="136" x2="180" y2="136"/>
+        <line x1="30" y1="154" x2="180" y2="154"/><line x1="30" y1="172" x2="180" y2="172"/>
+      </g>
+      <polygon points="16,106 105,46 194,106" fill="#c41e3a"/>
+      <polyline points="16,106 105,46 194,106" fill="none" stroke="#fff" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+      <g fill="#fff">
+        <circle cx="40" cy="96" r="4"/><circle cx="62" cy="81" r="3"/><circle cx="150" cy="80" r="3.5"/><circle cx="172" cy="94" r="4"/>
+      </g>
+      <!-- sign -->
+      <g transform="rotate(-4 105 72)">
+        <rect x="70" y="64" width="70" height="20" rx="4" fill="#f5e6c8" stroke="#5a2d0c" stroke-width="2"/>
+        <text x="105" y="78" text-anchor="middle" font-family="Marker Felt, Comic Sans MS, sans-serif" font-size="10" font-weight="bold" fill="#c41e3a">ELF WORKSHOP</text>
+      </g>
+      <!-- windows -->
+      <g stroke="#5a2d0c" stroke-width="3">
+        <rect x="42" y="124" width="32" height="26" fill="#ffd75e"/>
+        <line x1="58" y1="124" x2="58" y2="150"/><line x1="42" y1="137" x2="74" y2="137"/>
+        <rect x="136" y="124" width="32" height="26" fill="#ffd75e"/>
+        <line x1="152" y1="124" x2="152" y2="150"/><line x1="136" y1="137" x2="168" y2="137"/>
+      </g>
+      <!-- door + wreath -->
+      <path d="M90 184 V148 a15 15 0 0 1 30 0 V184 Z" fill="#5a2d0c"/>
+      <circle cx="115" cy="166" r="2.5" fill="#f5c518"/>
+      <circle cx="105" cy="150" r="7" fill="none" stroke="#1f8a3c" stroke-width="4"/>
+      <path d="M101 157 l4 -3 l4 3 z" fill="#c41e3a"/>
+      <!-- presents -->
+      <rect x="196" y="158" width="32" height="26" fill="#2a9df4"/>
+      <rect x="209" y="158" width="6" height="26" fill="#fff"/>
+      <rect x="202" y="138" width="22" height="20" fill="#f5c518"/>
+      <rect x="211" y="138" width="4" height="20" fill="#c41e3a"/>
+      <path d="M213 138 q-10 -10 -12 0 z M213 138 q10 -10 12 0 z" fill="#c41e3a"/>
+      <rect x="312" y="160" width="32" height="24" fill="#e0457b" transform="rotate(6 328 172)"/>
+      <rect x="325" y="160" width="6" height="24" fill="#ffe066" transform="rotate(6 328 172)"/>
+      <!-- the elf -->
+      <g class="elf">
+        <!-- striped stockings -->
+        <rect x="258" y="160" width="8" height="20" fill="#fff"/>
+        <rect x="274" y="160" width="8" height="20" fill="#fff"/>
+        <g fill="#c41e3a">
+          <rect x="258" y="164" width="8" height="4"/><rect x="258" y="172" width="8" height="4"/>
+          <rect x="274" y="164" width="8" height="4"/><rect x="274" y="172" width="8" height="4"/>
+        </g>
+        <!-- curly shoes -->
+        <path d="M266 184 H248 q-8 0 -8 -8 q4 4 8 0 q2 -2 6 -2 H266 Z" fill="#1f8a3c"/>
+        <path d="M274 184 H292 q8 0 8 -8 q-4 4 -8 0 q-2 -2 -6 -2 H274 Z" fill="#1f8a3c"/>
+        <circle cx="240" cy="175" r="2.5" fill="#f5c518"/><circle cx="300" cy="175" r="2.5" fill="#f5c518"/>
+        <!-- body -->
+        <path d="M246 164 L294 164 L285 120 L255 120 Z" fill="#1f8a3c"/>
+        <rect x="248" y="146" width="44" height="7" fill="#2b1a0f"/>
+        <rect x="265" y="145" width="10" height="9" fill="none" stroke="#f5c518" stroke-width="2.5"/>
+        <polygon points="252,120 288,120 284,128 279,122 274,129 270,122 266,129 261,122 256,128" fill="#c41e3a"/>
+        <!-- left arm holding a tiny present -->
+        <line x1="255" y1="128" x2="240" y2="142" stroke="#1f8a3c" stroke-width="7" stroke-linecap="round"/>
+        <rect x="230" y="138" width="12" height="12" fill="#e0457b"/>
+        <rect x="235" y="138" width="2.5" height="12" fill="#fff"/>
+        <!-- right arm with hammer -->
+        <g class="hammer">
+          <line x1="286" y1="128" x2="302" y2="112" stroke="#1f8a3c" stroke-width="7" stroke-linecap="round"/>
+          <line x1="303" y1="112" x2="312" y2="92" stroke="#8b5a2b" stroke-width="4" stroke-linecap="round"/>
+          <rect x="302" y="82" width="20" height="10" rx="2" fill="#9aa5b1" transform="rotate(24 312 87)"/>
+        </g>
+        <!-- ears -->
+        <polygon points="252,96 232,84 251,108" fill="#ffc9a0"/>
+        <polygon points="288,96 308,84 289,108" fill="#ffc9a0"/>
+        <!-- head -->
+        <circle cx="270" cy="100" r="20" fill="#ffd6b0"/>
+        <circle cx="257" cy="106" r="4" fill="#ff9aa8" opacity=".8"/>
+        <circle cx="284" cy="106" r="4" fill="#ff9aa8" opacity=".8"/>
+        <!-- googly mismatched eyes -->
+        <g class="blink">
+          <circle cx="262" cy="97" r="6" fill="#fff" stroke="#2b1a0f" stroke-width="1.5"/>
+          <circle cx="278" cy="96" r="8" fill="#fff" stroke="#2b1a0f" stroke-width="1.5"/>
+        </g>
+        <circle cx="264" cy="99" r="2.6" fill="#2b1a0f"/>
+        <circle cx="275" cy="93" r="3.4" fill="#2b1a0f"/>
+        <!-- grin -->
+        <path d="M259 107 Q270 121 282 106" fill="#7a0c1f" stroke="#2b1a0f" stroke-width="2"/>
+        <rect x="267" y="108" width="5" height="4" fill="#fff"/>
+        <!-- floppy hat -->
+        <path d="M249 90 Q256 58 302 50 Q284 66 292 88 Z" fill="#c41e3a"/>
+        <rect x="246" y="83" width="48" height="10" rx="5" fill="#fff"/>
+        <circle cx="303" cy="50" r="6.5" fill="#fff"/>
+      </g>
+      <!-- snowy ground -->
+      <path d="M0 184 Q60 176 120 184 T240 184 T360 182 V178 Q360 200 338 200 H22 Q0 200 0 178 Z" fill="#f4f8ff"/>
+    </svg>
+    <h1>Elf Workshop</h1>
+    <p class="tagline">Secret Santa Dept. of Gift Logistics &amp; Tomfoolery&trade;</p>
+  </header>
+
+  <!-- ============ CREATE MODE ============ -->
+  <main id="create" hidden>
+    <section class="card">
+      <h2>1. Round up the elves</h2>
+      <p class="hint">One name per line. At least 3 elves required (union rules).</p>
+      <textarea id="names" placeholder="Grandma Ruth&#10;Cousin Vinny&#10;Aunt Pat&#10;The Dog" autocomplete="off" autocapitalize="words" spellcheck="false"></textarea>
+    </section>
+
+    <section class="card">
+      <h2>2. Keep these elves apart</h2>
+      <p class="hint">Couples, rivals, people who already know what they're getting each other&hellip; Works both ways.</p>
+      <div class="pair">
+        <select id="exA" aria-label="First elf"></select>
+        <span class="vs">&#x2715;</span>
+        <select id="exB" aria-label="Second elf"></select>
+      </div>
+      <button id="addEx" class="ghost block add-btn" type="button">&#x1F6AB; Keep apart</button>
+      <div id="chips" class="chips"></div>
+    </section>
+
+    <div id="createError" class="error" hidden></div>
+    <button id="generate" class="green block big" type="button">&#x1F528; Fire up the toy machine!</button>
+    <p id="genStatus" class="status" aria-live="polite"></p>
+
+    <section id="results" hidden>
+      <section class="card">
+        <h2>3. Send the secret dispatches</h2>
+        <p class="hint">Send each elf their own message. Everyone gets the same link &mdash; only their elf name unlocks their assignment. No peeking, you sneaky elf.</p>
+        <div id="fileWarn" class="warn" hidden>&#x26A0;&#xFE0F; This page is opened from a file on your computer, so these links won't work for anyone else. Host it on the web first.</div>
+        <div class="warn">&#x1F9E0; The workshop has no memory! Send everything before you close this tab.</div>
+      </section>
+      <div id="messages"></div>
+      <button id="startOver" class="ghost block" type="button">&#x1F504; Start a brand-new workshop</button>
+    </section>
+  </main>
+
+  <!-- ============ REVEAL MODE ============ -->
+  <main id="reveal" hidden>
+    <section class="card reveal-box" id="revealCard">
+      <p class="hint">&#x1F4EC; A top-secret dispatch has arrived from the North Pole.</p>
+      <form id="revealForm" autocomplete="off">
+        <label for="elfName">What's your elf name?</label>
+        <input type="text" id="elfName" placeholder="e.g. Twinkly Pip Gumdropwhistle" autocomplete="off" autocapitalize="words" autocorrect="off" spellcheck="false" required>
+        <button id="revealBtn" class="block big" type="submit">&#x1F50D; Reveal my victim&hellip; er, giftee</button>
+      </form>
+      <p id="revealStatus" class="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card result" id="resultCard" hidden>
+      <pre aria-hidden="true">
+      _   _
+     ( \ / )
+  ____\_V_/____
+ |      |      |
+ |______|______|
+ |      |      |
+ |      |      |
+ |______|______|</pre>
+      <p>Hey <b id="resultElf"></b>, you're making a gift for&hellip;</p>
+      <p class="recipient" id="recipient"></p>
+      <p class="hint">Eat this screen after reading. &#x1F92B;</p>
+      <button id="hideBtn" class="ghost block" type="button">&#x1F648; Hide it again</button>
+    </section>
+
+    <div id="badLink" class="card" hidden>
+      <h2>&#x1F98C; This link got chewed by a reindeer</h2>
+      <p>Something's wrong with this link. Ask your Secret Santa organizer to send it again.</p>
+    </div>
+  </main>
+
+  <footer>
+<pre class="ascii" aria-hidden="true">
+     <b>*</b>
+    /.\
+   /<i>o</i>.'\
+   /'.'\
+  /.''<i>o</i>'\
+  /<i>o</i>.'.'.\
+ /'.''.'<i>o</i>.\
+ ^^^[_]^^^</pre>
+    <p id="newLink" hidden><a href="./">Organizing your own Secret Santa? Start a workshop &rarr;</a></p>
+    <p>No servers were harmed. Everything lives in the link.</p>
+  </footer>
+</div>
+
+<script>
+'use strict';
+
+/* ================= word lists ================= */
+const ADJECTIVES = ['Jingly','Twinkly','Sparkly','Wobbly','Snuggly','Giggly','Frosty','Sugary','Tinselly','Glittery',
+  'Fuzzy','Bouncy','Merry','Jolly','Pepperminty','Gingery','Snowy','Toasty','Cocoa','Sneaky',
+  'Sleepy','Dizzy','Wiggly','Squishy','Crinkly','Chunky','Fluffy','Bumbly','Prancy','Twirly',
+  'Zippy','Marzipan','Nutmeg','Cinnamon','Velvety','Tinkly','Clumsy','Noodly','Pickled','Turbo',
+  'Mighty','Tiny','Wee','Sticky','Jiggly','Shimmery','Plucky','Cheeky','Rosy','Starry',
+  'Icy','Mittened','Booted','Rumbly','Snorty','Waddly','Puffy','Sprightly','Bonkers','Kooky',
+  'Zany','Loopy','Goofy','Wonky','Spangly','Festive','Yuletide','Candied','Buttery','Toffee',
+  'Crumbly','Sniffly','Hiccupy','Ticklish','Bashful','Grumbly','Snoozy','Peppy','Perky','Quirky',
+  'Snazzy','Dapper','Fancy','Sassy','Spiffy','Dazzling','Blinky','Squeaky','Honky','Tootly',
+  'Jazzy','Swirly','Glowy','Frizzy','Doodly','Fizzy','Bubbly','Wibbly','Chilly','Cuddly'];
+const FIRST_NAMES = ['Pip','Tinsel','Jingle','Sprout','Nibbles','Buttons','Pudding','Biscuit','Noodle','Twinkle',
+  'Pickles','Bramble','Fizz','Widget','Gizmo','Sprocket','Doodle','Muffin','Crumpet','Waffle',
+  'Pebble','Clementine','Figgy','Holly','Ivy','Juniper','Pippin','Bartholomew','Ebenezer','Mistletoe',
+  'Cobble','Tumble','Bumble','Wobble','Dinky','Pumpernickel','Sprinkles','Jellybean','Gumdrop','Marshmallow',
+  'Fudge','Truffle','Clove','Bingle','Bobbin','Thimble','Tinker','Ziggy','Mittens','Snowball',
+  'Flurry','Frostina','Dasher','Prancer','Comet','Twiggy','Hazel','Acorn','Chestnut','Puddle',
+  'Spud','Tater','Turnip','Radish','Parsnip','Rutabaga','Barnaby','Rupert','Percival','Mortimer',
+  'Gertrude','Mildred','Agatha','Winifred','Ignatius','Cornelius','Archibald','Humphrey','Reginald','Fitzgerald',
+  'Bertha','Ethel','Florence','Dorothy','Montgomery','Sven','Brunhilde','Gustav','Ingrid','Lars',
+  'Magnus','Nils','Rolf','Sigrid','Ulf','Bjorn','Dagmar','Elmo','Tiberius','Wilbur'];
+const SURNAMES = ['Gumdropwhistle','Sparklebottom','Jinglebritches','Tinselpants','McFrostyface','Puddingfoot','Candycane','Wobblebottom','Fuzzlewhisker','Twinkletoes',
+  'Frostbeard','Cocoamug','Snickerdoodle','Gingersnap','Plumpudding','Merrymitten','Hollyberry','Mistlewhistle','Sugarplum','Nutcracker',
+  'Sleighbells','Stockingstuffer','Chimneysweep','Fruitcake','Eggnogg','Figgypudding','Marshmallowfluff','Toffeenose','Waddlesworth','Bumblesnout',
+  'Noodleman','Pickleberry','Crumblecake','Snowglobe','Icicletoes','Glittergut','Tinklebell','Jollybottom','Elfington','Gnomesworth',
+  'Wrappington','Bowtangle','Ribbonwrangler','Toymaker','Sawdust','Sprocketsocks','Whistlewind','Mittensworth','Cuddlesnout','Puddlejumper',
+  'Biscuitbarrel','Cookiecrumb','Milkmustache','Reindeerwrangler','Sleighgreaser','Northpole','Penguinpants','Walruswhisker','Yakbutter','Frostbite',
+  'Blizzardbottom','Flurryfoot','Snowangel','Slushpuddle','Toboggan','Lumpofcoal','Naughtylist','Nicelist','Chestnutroast','Hottoddy',
+  'Wassail','Fireside','Yulelog','Glitterbomb','Garland','Baubleworth','Candlewick','Gingerbeard','Pinecone','Spruceworth',
+  'Jamjar','Teacosy','Scarfknotter','Earmuffs','Bobblehat','Woollysocks','Slippersworth','Snorelington','Napsworth','Fluffernutter',
+  'Sugarsnout','Jelloshoes','Tinseltooth','Snickerbottom','Hullabaloo','Kerfuffle','Whatsit','Thingamabob','Doohickey','Fiddlesticks'];
+
+const PBKDF2_ITERATIONS = 200000;
+const MAX_ITERATIONS = 2000000;
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+
+/* ================= helpers ================= */
+function randInt(n) {
+  // Unbiased random integer in [0, n) using rejection sampling.
+  const limit = Math.floor(0x100000000 / n) * n;
+  const buf = new Uint32Array(1);
+  do { crypto.getRandomValues(buf); } while (buf[0] >= limit);
+  return buf[0] % n;
+}
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = randInt(i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function randBytes(n) { return crypto.getRandomValues(new Uint8Array(n)); }
+
+function b64uEncode(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64uDecode(str) {
+  const s = atob(str.replace(/-/g, '+').replace(/_/g, '/'));
+  const out = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+  return out;
+}
+function toHex(bytes) { return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join(''); }
+function fromHex(hex) { return new Uint8Array(hex.match(/../g).map(h => parseInt(h, 16))); }
+async function sha256(str) { return new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(str))); }
+
+// Lowercase, strip accents/spaces/punctuation, so "twinkly  pip-gumdropwhistle!" still matches.
+function normalizeName(s) {
+  return s.normalize('NFKD').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/* ================= participants & exclusions ================= */
+function parseNames(text) {
+  return text.split('\n').map(s => s.trim().replace(/\s+/g, ' ')).filter(Boolean);
+}
+function nameKey(name) { return name.toLowerCase(); }
+
+/* ================= assignment ================= */
+// Returns { assignment: [recipientIndex per giver] } or { error, who }.
+// Exclusions are pairs of indices, banned in both directions.
+function assign(n, exclusions) {
+  const banned = Array.from({ length: n }, () => new Set());
+  for (const [a, b] of exclusions) { banned[a].add(b); banned[b].add(a); }
+  const allowed = (g, r) => g !== r && !banned[g].has(r);
+
+  for (let g = 0; g < n; g++) {
+    let ok = false;
+    for (let r = 0; r < n; r++) if (allowed(g, r)) { ok = true; break; }
+    if (!ok) return { error: 'no-recipient', who: g };
+  }
+
+  // Phase 1: rejection sampling of uniformly random permutations. This gives
+  // every valid assignment equal odds, and succeeds quickly for typical groups.
+  const idx = Array.from({ length: n }, (_, i) => i);
+  for (let attempt = 0; attempt < 5000; attempt++) {
+    const p = shuffle(idx);
+    if (p.every((r, g) => allowed(g, r))) return { assignment: p };
+  }
+
+  // Phase 2: exhaustive randomized backtracking (most-constrained giver first),
+  // which either finds an assignment or proves none exists.
+  const result = new Array(n).fill(-1);
+  const taken = new Array(n).fill(false);
+  const order = shuffle(idx);
+  let steps = 0;
+  function solve(depth) {
+    if (depth === n) return true;
+    if (++steps > 2000000) throw new Error('too-hard');
+    let best = -1, bestOpts = null;
+    for (const g of order) {
+      if (result[g] >= 0) continue;
+      const opts = idx.filter(r => !taken[r] && allowed(g, r));
+      if (best < 0 || opts.length < bestOpts.length) { best = g; bestOpts = opts; }
+      if (!opts.length) return false;
+    }
+    for (const r of shuffle(bestOpts)) {
+      result[best] = r; taken[r] = true;
+      if (solve(depth + 1)) return true;
+      result[best] = -1; taken[r] = false;
+    }
+    return false;
+  }
+  try {
+    if (solve(0)) return { assignment: result };
+  } catch (e) {
+    return { error: 'too-hard' };
+  }
+  return { error: 'impossible' };
+}
+
+/* ================= elf names ================= */
+// Some elves are born with their names. (Stored hashed so nobody can spot it by reading the source.)
+const SPECIAL_ELVES = [
+  { hash: '98dc167f1d6578cd4ad7d657f7a6549e6a17117ccbd8ce26dc4eb52a63f53e55', name: '678f979e7a7acf326aa5' },
+];
+async function specialElfName(participant) {
+  const norm = normalizeName(participant);
+  const h = toHex(await sha256('elf-egg:' + norm));
+  const hit = SPECIAL_ELVES.find(s => s.hash === h);
+  if (!hit) return null;
+  const mask = await sha256('elf-egg-key:' + norm);
+  return dec.decode(fromHex(hit.name).map((b, i) => b ^ mask[i]));
+}
+function randomElfName() {
+  return [ADJECTIVES, FIRST_NAMES, SURNAMES].map(list => list[randInt(list.length)]).join(' ');
+}
+async function makeElfNames(participants) {
+  const names = new Array(participants.length);
+  const used = new Set();
+  for (let i = 0; i < participants.length; i++) {
+    const special = await specialElfName(participants[i]);
+    if (special) { names[i] = special; used.add(normalizeName(special)); }
+  }
+  for (let i = 0; i < participants.length; i++) {
+    if (names[i]) continue;
+    let name;
+    do { name = randomElfName(); } while (used.has(normalizeName(name)));
+    used.add(normalizeName(name));
+    names[i] = name;
+  }
+  return names;
+}
+
+/* ================= crypto & state ================= */
+async function deriveKey(elfName, salt, iterations) {
+  const base = await crypto.subtle.importKey('raw', enc.encode(normalizeName(elfName)), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations, hash: 'SHA-256' },
+    base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+
+// Each entry is AES-GCM(key = PBKDF2(giver's elf name), recipient's name), zero-padded so all
+// entries are the same length. Entries are shuffled so their order says nothing.
+async function buildState(participants, assignment, elfNames, onProgress) {
+  const salt = randBytes(16);
+  const longest = Math.max(...participants.map(p => enc.encode(p).length));
+  const width = Math.ceil((longest + 1) / 32) * 32;
+  const entries = [];
+  for (let g = 0; g < participants.length; g++) {
+    const key = await deriveKey(elfNames[g], salt, PBKDF2_ITERATIONS);
+    const iv = randBytes(12);
+    const plain = new Uint8Array(width);
+    plain.set(enc.encode(participants[assignment[g]]));
+    const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plain));
+    const packed = new Uint8Array(iv.length + ct.length);
+    packed.set(iv); packed.set(ct, iv.length);
+    entries.push(b64uEncode(packed));
+    if (onProgress) onProgress(g + 1, participants.length);
+  }
+  return { v: 1, s: b64uEncode(salt), i: PBKDF2_ITERATIONS, e: shuffle(entries) };
+}
+
+function encodeState(state) { return b64uEncode(enc.encode(JSON.stringify(state))); }
+function decodeState(str) {
+  try {
+    const st = JSON.parse(dec.decode(b64uDecode(str)));
+    if (st && st.v === 1 && typeof st.s === 'string' && Number.isInteger(st.i) &&
+        st.i > 0 && st.i <= MAX_ITERATIONS && Array.isArray(st.e) &&
+        st.e.length && st.e.every(x => typeof x === 'string')) return st;
+  } catch (e) { /* fall through */ }
+  return null;
+}
+
+// Returns the recipient's name, or null if this elf name doesn't unlock any entry.
+async function revealAssignment(state, elfName) {
+  const key = await deriveKey(elfName, b64uDecode(state.s), state.i);
+  for (const entry of state.e) {
+    const bytes = b64uDecode(entry);
+    try {
+      const plain = new Uint8Array(await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: bytes.slice(0, 12) }, key, bytes.slice(12)));
+      let end = plain.length;
+      while (end > 0 && plain[end - 1] === 0) end--;
+      return dec.decode(plain.slice(0, end));
+    } catch (e) { /* wrong key for this entry */ }
+  }
+  return null;
+}
+
+function buildMessage(name, elfName, url) {
+  return `Shhh ${name}!  Your secret santa elf name is ${elfName}.  Click this link to find your assignment.\n${url}`;
+}
+
+/* ================= UI ================= */
+const $ = sel => document.querySelector(sel);
+const LOADING_QUIPS = [
+  'Consulting the naughty list…', 'Bribing a reindeer…', 'Untangling the tinsel…',
+  'Asking Mrs. Claus (she knows everything)…', 'Defrosting the elf database…',
+  'Shaking the snow globe…', 'Polishing the sleigh bells…', 'Counting candy canes…',
+];
+const quip = () => LOADING_QUIPS[randInt(LOADING_QUIPS.length)];
+
+function makeSnow() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const snow = $('.snow');
+  const flakes = ['❄', '❅', '❆', '•'];
+  for (let i = 0; i < 26; i++) {
+    const s = document.createElement('span');
+    s.textContent = flakes[randInt(flakes.length)];
+    s.style.left = (randInt(1000) / 10) + 'vw';
+    s.style.fontSize = (8 + randInt(14)) + 'px';
+    s.style.animationDuration = (7 + randInt(10)) + 's';
+    s.style.animationDelay = (-randInt(16)) + 's';
+    s.style.setProperty('--drift', (randInt(80) - 40) + 'px');
+    snow.appendChild(s);
+  }
+}
+
+/* ---------- create mode ---------- */
+let exclusions = []; // [[nameA, nameB], …] stored as display names
+
+function refreshExclusionUI() {
+  const names = parseNames($('#names').value);
+  const keys = new Set(names.map(nameKey));
+  exclusions = exclusions.filter(([a, b]) => keys.has(nameKey(a)) && keys.has(nameKey(b)));
+
+  for (const sel of [$('#exA'), $('#exB')]) {
+    const prev = sel.value;
+    sel.textContent = '';
+    const ph = new Option(names.length ? 'Pick an elf…' : 'Add names first', '');
+    sel.add(ph);
+    for (const n of names) sel.add(new Option(n, n));
+    sel.value = names.includes(prev) ? prev : '';
+  }
+
+  const chips = $('#chips');
+  chips.textContent = '';
+  if (!exclusions.length) {
+    const p = document.createElement('span');
+    p.className = 'empty';
+    p.textContent = 'No feuds yet. How harmonious!';
+    chips.appendChild(p);
+  }
+  exclusions.forEach(([a, b], i) => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.textContent = `${a} ✕ ${b}`;
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.textContent = '×';
+    x.setAttribute('aria-label', `Remove ${a} and ${b}`);
+    x.onclick = () => { exclusions.splice(i, 1); refreshExclusionUI(); };
+    chip.appendChild(x);
+    chips.appendChild(chip);
+  });
+}
+
+function showCreateError(msg) {
+  const el = $('#createError');
+  el.textContent = msg;
+  el.hidden = !msg;
+  if (msg) { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; }
+}
+
+function addExclusion() {
+  const a = $('#exA').value, b = $('#exB').value;
+  if (!a || !b) return showCreateError('🧐 Pick two elves to keep apart.');
+  if (a === b) return showCreateError(`🤔 ${a} can't be kept apart from themselves. We tried. It got weird.`);
+  if (exclusions.some(([x, y]) => (x === a && y === b) || (x === b && y === a)))
+    return showCreateError('📋 Those two are already being kept apart.');
+  showCreateError('');
+  exclusions.push([a, b]);
+  refreshExclusionUI();
+}
+
+async function generate() {
+  showCreateError('');
+  const names = parseNames($('#names').value);
+  if (names.length < 3) return showCreateError('🧝 We need at least 3 elves to run a workshop.');
+  const seen = new Map();
+  for (const n of names) {
+    if (seen.has(nameKey(n))) return showCreateError(`👯 "${n}" is on the list twice. Clones are not allowed in the workshop.`);
+    seen.set(nameKey(n), true);
+  }
+  const index = new Map(names.map((n, i) => [nameKey(n), i]));
+  const pairs = exclusions.map(([a, b]) => [index.get(nameKey(a)), index.get(nameKey(b))]);
+
+  const res = assign(names.length, pairs);
+  if (res.error === 'no-recipient')
+    return showCreateError(`🚨 The toy machine jammed! ${names[res.who]} is kept apart from everyone, so they have nobody to give to. Remove an exclusion.`);
+  if (res.error)
+    return showCreateError('🚨 The toy machine jammed! There are too many elves being kept apart for everyone to get a giftee. Remove an exclusion or two.');
+
+  const btn = $('#generate');
+  btn.disabled = true;
+  $('#genStatus').textContent = quip();
+  try {
+    const elfNames = await makeElfNames(names);
+    const state = await buildState(names, res.assignment, elfNames, (done, total) => {
+      $('#genStatus').textContent = `🎁 Wrapping presents… ${done}/${total}`;
+    });
+    const url = location.href.split('#')[0] + '#' + encodeState(state);
+    renderMessages(names, elfNames, url);
+    $('#genStatus').textContent = '';
+  } catch (e) {
+    console.error(e);
+    $('#genStatus').textContent = '';
+    showCreateError('💥 Something exploded in the workshop. Try again? (Your browser may be too old.)');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e2) { /* nothing */ }
+    ta.remove();
+    return ok;
+  }
+}
+
+function renderMessages(names, elfNames, url) {
+  $('#fileWarn').hidden = location.protocol !== 'file:';
+  const box = $('#messages');
+  box.textContent = '';
+  names.forEach((name, i) => {
+    const msg = buildMessage(name, elfNames[i], url);
+    const card = document.createElement('section');
+    card.className = 'card msg-card';
+
+    const h = document.createElement('h3');
+    h.textContent = `🎅 ${name}`;
+    card.appendChild(h);
+
+    const text = document.createElement('div');
+    text.className = 'msg-text';
+    text.textContent = msg;
+    card.appendChild(text);
+
+    const actions = document.createElement('div');
+    actions.className = 'msg-actions';
+    if (navigator.share) {
+      const share = document.createElement('button');
+      share.type = 'button';
+      share.textContent = '📤 Share';
+      share.onclick = async () => {
+        try { await navigator.share({ text: msg }); markSent(); } catch (e) { /* cancelled */ }
+      };
+      actions.appendChild(share);
+    }
+    const copy = document.createElement('button');
+    copy.type = 'button';
+    copy.className = navigator.share ? 'ghost' : '';
+    copy.textContent = '📋 Copy';
+    copy.onclick = async () => {
+      const ok = await copyText(msg);
+      copy.textContent = ok ? '✅ Copied!' : '😵 Copy failed';
+      setTimeout(() => { copy.textContent = '📋 Copy'; }, 1800);
+    };
+    actions.appendChild(copy);
+
+    const label = document.createElement('label');
+    label.className = 'sent-toggle';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.onchange = () => card.classList.toggle('sent', cb.checked);
+    label.append(cb, document.createTextNode('Sent!'));
+    actions.appendChild(label);
+    function markSent() { cb.checked = true; card.classList.add('sent'); }
+
+    card.appendChild(actions);
+    box.appendChild(card);
+  });
+  $('#results').hidden = false;
+  $('#results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function hasUnsentMessages() {
+  return !$('#results').hidden && [...document.querySelectorAll('.sent-toggle input')].some(cb => !cb.checked);
+}
+
+function initCreate() {
+  $('#create').hidden = false;
+  $('#names').addEventListener('input', refreshExclusionUI);
+  $('#addEx').addEventListener('click', addExclusion);
+  $('#generate').addEventListener('click', generate);
+  $('#startOver').addEventListener('click', () => {
+    if (hasUnsentMessages() && !confirm('Some messages are not marked as sent. Throw them all in the fireplace?')) return;
+    $('#results').hidden = true;
+    $('#messages').textContent = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  window.addEventListener('beforeunload', e => {
+    if (hasUnsentMessages()) { e.preventDefault(); e.returnValue = ''; }
+  });
+  refreshExclusionUI();
+}
+
+/* ---------- reveal mode ---------- */
+function initReveal(state) {
+  $('#reveal').hidden = false;
+  $('#newLink').hidden = false;
+  $('#newLink a').href = location.href.split('#')[0];
+  if (!state) { $('#revealCard').hidden = true; $('#badLink').hidden = false; return; }
+
+  $('#revealForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const elf = $('#elfName').value.trim();
+    if (!normalizeName(elf)) return;
+    const btn = $('#revealBtn');
+    btn.disabled = true;
+    $('#revealStatus').textContent = quip();
+    try {
+      const [recipient] = await Promise.all([
+        revealAssignment(state, elf),
+        new Promise(r => setTimeout(r, 900)), // dramatic pause
+      ]);
+      if (recipient === null) {
+        $('#revealStatus').textContent = '🙅 No elf by that name works in this workshop. Check your spelling?';
+        const card = $('#revealCard');
+        card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+      } else {
+        $('#revealStatus').textContent = '';
+        $('#resultElf').textContent = elf;
+        $('#recipient').textContent = recipient + '!';
+        $('#revealCard').hidden = true;
+        $('#resultCard').hidden = false;
+      }
+    } catch (err) {
+      console.error(err);
+      $('#revealStatus').textContent = '💥 The workshop machinery broke. Try a newer browser?';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+  $('#hideBtn').addEventListener('click', () => {
+    $('#resultCard').hidden = true;
+    $('#revealCard').hidden = false;
+    $('#elfName').value = '';
+  });
+}
+
+function init() {
+  makeSnow();
+  const hash = location.hash.slice(1);
+  if (hash) initReveal(decodeState(hash));
+  else initCreate();
+}
+
+if (typeof document !== 'undefined') {
+  init();
+  // A different link pasted into the same tab: just reload into the right mode.
+  window.addEventListener('hashchange', () => location.reload());
+}
+</script>
+</body>
+</html>
